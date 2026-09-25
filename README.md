@@ -1,6 +1,7 @@
 # ER2-ENGINE
 
 [![CI](https://github.com/oeistools/ER2-ENGINE/actions/workflows/test.yml/badge.svg)](https://github.com/oeistools/ER2-ENGINE/actions/workflows/test.yml)
+[![Release](https://github.com/oeistools/ER2-ENGINE/actions/workflows/release.yml/badge.svg)](https://github.com/oeistools/ER2-ENGINE/releases/latest)
 [![Pages](https://github.com/oeistools/ER2-ENGINE/actions/workflows/pages.yml/badge.svg)](https://oeistools.github.io/ER2-ENGINE/)
 [![Quarto](https://img.shields.io/badge/quarto-%E2%89%A5%201.9-2596be)](https://quarto.org)
 [![ER2](https://img.shields.io/badge/ER2-mathematical%20Python-8a2be2)](https://github.com/oeistools/ER2)

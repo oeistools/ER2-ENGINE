@@ -1,0 +1,11 @@
+---
+title: "Output asis"
+engine: er2
+format: html
+---
+
+```{er2}
+#| echo: false
+#| output: asis
+print(f"## Heading made by ER2: {2^10}")
+```

@@ -1,0 +1,38 @@
+---
+title: "Cell options"
+engine: er2
+format: html
+---
+
+```{er2}
+#| echo: false
+print("ECHO_HIDDEN_CODE")
+```
+
+```{er2}
+#| output: false
+print("OUTPUT_HIDDEN")
+```
+
+```{er2}
+#| eval: false
+print("NEVER_RUN")
+```
+
+```{er2}
+#| include: false
+print("NOT_INCLUDED")
+```
+
+```{er2}
+#| filename: "primes.er2"
+#| classes: special
+print("WITH_FILENAME")
+```
+
+```{er2}
+#| warning: false
+import sys
+print("STDERR_HIDDEN", file=sys.stderr)
+print("STDOUT_KEPT")
+```

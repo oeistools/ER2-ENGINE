@@ -1,0 +1,26 @@
+---
+title: "Errors"
+engine: er2
+format: html
+---
+
+```{er2}
+#| error: true
+x = 42
+1/0
+```
+
+```{er2}
+#| error: true
+def broken(:
+```
+
+```{er2}
+print(x)
+```
+
+```{er2}
+import warnings
+warnings.warn("A_WARNING_NOT_AN_ERROR")
+print("after the warning")
+```

@@ -1,0 +1,26 @@
+---
+title: "Rich display"
+engine: er2
+format: html
+---
+
+```{er2}
+sym x
+expand((x + 1)^3)
+```
+
+```{er2}
+show(x^2 / 2)
+```
+
+```{er2}
+factor(360);
+```
+
+```{er2}
+Matrix([[1, 2], [3, 4]]).det()
+```
+
+```{er2}
+"a plain string"
+```

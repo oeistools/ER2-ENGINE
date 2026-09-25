@@ -1,0 +1,9 @@
+---
+title: "An unhandled error must stop the render"
+engine: er2
+format: html
+---
+
+```{er2}
+1/0
+```

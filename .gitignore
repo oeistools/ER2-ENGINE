@@ -1,0 +1,39 @@
+# Local notes, not part of the extension.
+/draft/
+
+# Quarto
+/.quarto/
+**/.quarto/
+# This repository's own _freeze is test output. Users of the extension
+# should commit theirs.
+/_freeze/
+/tests/freeze/_freeze/
+_site/
+docs/_site/
+*_files/
+*_cache/
+/examples/*.html
+/tests/cases/*.html
+# the gfm render of the figure case
+/tests/cases/*.md
+/tests/expect-fail/*.html
+/tests/freeze/*.html
+**/*.quarto_ipynb
+
+# Python
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+
+# Deno / build
+node_modules/
+deno.lock
+/dist/

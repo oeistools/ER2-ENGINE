@@ -1,0 +1,6 @@
+# A project of its own, because Quarto honours `freeze` only in a render of
+# a whole project: rendering one file always executes it. `_extensions` is a
+# symlink to the repository's, as in docs/, since a nested project does not
+# find its parent's.
+project:
+  type: default

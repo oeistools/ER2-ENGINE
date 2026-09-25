@@ -1,0 +1,11 @@
+---
+title: "Freeze"
+engine: er2
+format: html
+freeze: true
+---
+
+```{er2}
+import random
+print(random.randrange(10^17, 10^18))
+```

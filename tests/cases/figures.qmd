@@ -1,0 +1,22 @@
+---
+title: "Figures"
+engine: er2
+format: html
+---
+
+```{er2}
+#| label: fig-primes
+#| fig-cap: "Prime counting function"
+#| fig-alt: "A staircase plot"
+import matplotlib.pyplot as plt
+xs = list(range(2, 200))
+plt.step(xs, [primepi(n) for n in xs])
+```
+
+See @fig-primes.
+
+```{er2}
+#| echo: false
+fig, (a, b) = plt.subplots(1, 2)
+a.plot([1, 2, 3]); b.plot([3, 2, 1]);
+```

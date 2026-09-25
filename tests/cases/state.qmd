@@ -1,0 +1,16 @@
+---
+title: "Session state"
+engine: er2
+format: html
+---
+
+```{er2}
+sym x
+answer = 6*7
+f = x^2 - 1
+```
+
+```{er2}
+print(answer)
+print(factor(f))
+```

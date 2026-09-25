@@ -1,0 +1,14 @@
+---
+title: "Highlighting"
+engine: er2
+format: html
+---
+
+```{er2}
+#| eval: false
+sym x, y           # a comment with sym and ^ inside
+z = x^2 ^^ 3r
+s = "sym in a string"
+for k in range(10):
+    print(k)
+```

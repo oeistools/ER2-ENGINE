@@ -1,0 +1,8 @@
+# Makes the repository itself a Quarto project, so that examples/ and tests/
+# resolve _extensions/er2 without the extension having to be installed
+# first. Users of the extension do not need a file like this.
+project:
+  type: default
+  render:
+    - examples/*.qmd
+    - tests/cases/*.qmd

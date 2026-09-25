@@ -1,0 +1,27 @@
+---
+title: "Inline code"
+engine: er2
+format: html
+---
+
+```{er2}
+#| include: false
+sym x
+p = nextprime(10^20)
+f = (x + 1)^2
+```
+
+The prime is `{er2} p`, which has `{er2} len(str(p))` digits.
+
+Inline code sees the state at its own position: `{er2} 6*7`, and exact
+arithmetic applies: `{er2} 1/3 + 1/6`.
+
+In LaTeX, $f =$ `{er2} latex(f)`.
+
+A fenced block must not be evaluated:
+
+```markdown
+The prime is `{er2} p`.
+```
+
+After the block, substitution still works: `{er2} 2^10`.

@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ER2-ENGINE: a Quarto execution engine and syntax highlighter for ER2"
+abstract: >-
+  A Quarto engine extension that executes ER2 code blocks, keeping one ER2
+  session per document, together with ER2's syntax definition, which Quarto
+  applies automatically.
+type: software
+authors:
+  - given-names: "Enrique"
+    family-names: "Pérez Herrero"
+    email: "eph.project1500@gmail.com"
+repository-code: "https://github.com/oeistools/ER2-ENGINE"
+url: "https://github.com/oeistools/ER2-ENGINE"
+version: 0.1.0
+date-released: "2026-09-25"
+license: MIT
+keywords:
+  - quarto
+  - er2
+  - python
+  - number-theory
+  - computer-algebra
+  - syntax-highlighting
+  - literate-programming
+references:
+  - type: software
+    title: "ER2"
+    abstract: "Mathematical Python: symbolic syntax, exact arithmetic and PARI/GP number theory."
+    authors:
+      - given-names: "Enrique"
+        family-names: "Pérez Herrero"
+    url: "https://github.com/oeistools/ER2"
+    license: MIT
+  - type: software
+    title: "Quarto"
+    authors:
+      - name: "Posit, PBC"
+    url: "https://quarto.org"
+    license: MIT

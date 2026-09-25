@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<!--
+  Syntax highlighting for ER2 (ARCHITECTURE.md §1.1, §1.2).
+
+  A KDE syntax definition, which is what Pandoc's highlighter reads.
+  Quarto loads it through `syntax-definitions:` in a document's front
+  matter, so a block displayed as `er2` is highlighted as ER2 rather
+  than falling back to plain text.
+
+  ER2 is a superset of Python, and this file says exactly that: the
+  three ER2 rules come first, then `IncludeRules ##Python` brings in
+  everything else, so Python's keywords, builtins, strings, f-strings
+  and comments need no restating and cannot drift from Pandoc's.
+
+  The rules are the §1.1 table, and nothing else belongs here:
+    - `sym x, y`   declares symbols
+    - `5r`         a raw Python literal (also `0x1Fr`, `1_000r`)
+    - `^^`, `^^=`  XOR; plain `^` is a power and Python's operator
+                   rule already covers it
+  Strings and comments are Python's, so `sym` inside one is not
+  highlighted as a keyword -- the same rule the preparser follows.
+-->
+<language name="ER2" section="Sources" version="1" kateversion="5.0"
+          extensions="*.er2" mimetype="text/x-er2"
+          author="The ER2 authors" license="MIT">
+  <highlighting>
+    <list name="er2keywords">
+      <item>sym</item>
+    </list>
+    <contexts>
+      <context name="Normal" attribute="Normal Text" lineEndContext="#stay">
+        <RegExpr attribute="Raw Literal" String="\b(0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|[0-9][0-9_]*)r\b"/>
+        <RegExpr attribute="ER2 Operator" String="\^\^=?|\^="/>
+        <keyword attribute="ER2 Keyword" String="er2keywords"/>
+        <IncludeRules context="##Python" includeAttrib="true"/>
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal Text" defStyleNum="dsNormal"/>
+      <itemData name="ER2 Keyword" defStyleNum="dsKeyword"/>
+      <itemData name="ER2 Operator" defStyleNum="dsOperator"/>
+      <itemData name="Raw Literal" defStyleNum="dsBaseN"/>
+    </itemDatas>
+  </highlighting>
+</language>

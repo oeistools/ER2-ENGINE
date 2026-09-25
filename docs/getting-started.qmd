@@ -18,6 +18,10 @@ title: "Get started"
   uv tool install --with matplotlib git+https://github.com/oeistools/ER2
   ```
 
+**Windows**: ER2 cannot be installed natively yet, because its PARI
+bridge, `cypari2`, has no Windows build. Run Quarto and ER2 inside
+[WSL](https://learn.microsoft.com/windows/wsl/) instead.
+
 ## Install the extension
 
 In the directory of your document or project:

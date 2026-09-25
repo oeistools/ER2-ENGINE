@@ -202,9 +202,14 @@ evaluates with `prelude.namespace()` for that reason.
 - ~~HTML display (`_repr_html_`)~~ — done: raw HTML in HTML formats only,
   the next representation elsewhere. No ER2 type has one, so ER2 values
   display exactly as before.
-- ~~A Windows runner in CI~~ — done, with interpreter discovery from the
-  `er2.exe` launcher (pip's and uv's both keep the path as text) and
-  `install.ps1`.
+- **Windows is blocked upstream.** ER2 depends on `cypari2`, which has no
+  Windows wheel on PyPI and no win-64 build on conda-forge (checked
+  2026-09-25; conda-forge has PARI itself for win-64, not `cypari2`). A
+  Windows CI job was tried and fails installing ER2, before the engine is
+  reached, so it was removed along with `install.ps1`. The engine keeps
+  its Windows code — `er2.exe` launcher discovery, `python` instead of
+  `python3` — untested, for the day `cypari2` ships Windows wheels. Until
+  then Windows users run Quarto and ER2 inside WSL.
 - Pinning CI to a released ER2 once ER2 is on PyPI, instead of its `main`.
 
 ## Not planned

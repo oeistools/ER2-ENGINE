@@ -96,6 +96,10 @@ and a non-blank expression; `tests/cases/inline.qmd` pins both.
 **No Node here**, so markdownlint cannot run locally, and CI does not run it
 yet either.
 
+**ER2 does not install on Windows**: `cypari2` has no Windows wheel and no
+conda-forge win-64 build. Do not re-add a Windows CI job until it does; the
+last one failed compiling `cypari2`, before the engine was reached.
+
 ## Releasing
 
 As in PARI-GP-ENGINE: `make bump-version V=x.y.z`, write the `CHANGELOG.md`

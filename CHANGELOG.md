@@ -29,8 +29,9 @@ All notable changes to this project are documented here. The format follows
 
 - HTML display: a value with `_repr_html_` (a pandas `DataFrame`, say) is
   shown as a table in HTML formats, and as LaTeX or text elsewhere.
-- Windows: the engine finds ER2's Python inside the `er2.exe` launcher, and
-  `install.ps1` checks the prerequisites; a Windows job in CI.
+- The engine looks for ER2's Python inside a Windows `er2.exe` launcher.
+  Untested: ER2 itself cannot be installed on Windows yet, because
+  `cypari2` has no Windows build; use WSL.
 - The `er2` interpreter is also found behind pip's `#!/bin/sh` wrapper, which
   pip writes when the path has spaces or is too long for a shebang.
 

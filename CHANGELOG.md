@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-09-25
+
+The first release: ER2 as a Quarto language, with ` ```{er2} ` cells that
+execute in one ER2 session per document, without Jupyter.
+
 ### Added
 
 - The engine (`engine: er2`), executing ` ```{er2} ` cells in one ER2
@@ -34,9 +39,5 @@ All notable changes to this project are documented here. The format follows
   `cypari2` has no Windows build; use WSL.
 - The `er2` interpreter is also found behind pip's `#!/bin/sh` wrapper, which
   pip writes when the path has spaces or is too long for a shebang.
-
-### Fixed
-
-- A code span showing a cell fence in prose (`` ` ```{er2} ` ``) was read as
-  an empty inline expression and stopped the render. An inline error now
-  quotes the expression.
+- A code span that shows a cell fence in prose is not taken for inline
+  code, and an error in inline code quotes the expression.

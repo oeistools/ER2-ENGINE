@@ -72,7 +72,7 @@ change ER2 and does not ask ER2 to change.
 | --- | --- |
 | M1 — cells execute | ✅ done (2026-09-25) |
 | M2 — rich output and figures | ✅ done (2026-09-25) |
-| M3 — packaging, docs, CI | ✅ in the repository; CI and the first release not yet verified |
+| M3 — packaging, docs, CI | ✅ done: CI green on Linux and macOS, docs live, v0.1.0 released (2026-09-25) |
 
 ## Milestones
 

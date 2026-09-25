@@ -40,7 +40,7 @@ factor(x^2 - 1), phi(2^61 - 1), 1/3
 | **Install** | `quarto add oeistools/ER2-ENGINE` |
 | **Licence** | MIT |
 
-**Status: 0.1.0, in development.** See [PLAN.md](PLAN.md) for the
+**Status: 0.1.0, the first release.** See [PLAN.md](PLAN.md) for the
 milestones and the decisions behind the design.
 
 ## Why an engine, when ER2 already runs in Quarto

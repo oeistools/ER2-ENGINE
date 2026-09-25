@@ -216,3 +216,7 @@ installs the working tree instead.
 
 MIT, see [LICENSE](LICENSE). `er2.xml` comes from
 [ER2](https://github.com/oeistools/ER2) (`examples/er2.xml`), also MIT.
+
+The extension runs ER2 as an external program, in whatever Python ER2 is
+installed in, and neither includes nor links against it or its
+dependencies — among them `cypari2` and PARI/GP, which are GPL.

@@ -20,9 +20,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----
-
-This extension is an independent project. It drives the PARI/GP interpreter as
-an external program and does not include or link against PARI/GP itself.
-PARI/GP is free software distributed under the GNU General Public License by
-the PARI Group, Universite de Bordeaux: https://pari.math.u-bordeaux.fr/

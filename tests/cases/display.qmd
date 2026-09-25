@@ -24,3 +24,14 @@ Matrix([[1, 2], [3, 4]]).det()
 ```{er2}
 "a plain string"
 ```
+
+```{er2}
+#| echo: false
+class Table:
+    def _repr_html_(self):
+        return "<table class='er2-html-table'><tr><td>HTML_CELL</td></tr></table>"
+    def __repr__(self):
+        return "PLAIN_TABLE"
+
+Table()
+```

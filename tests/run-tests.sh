@@ -19,18 +19,32 @@ red()    { printf '\033[31m%s\033[0m\n' "$*"; }
 green()  { printf '\033[32m%s\033[0m\n' "$*"; }
 yellow() { printf '\033[33m%s\033[0m\n' "$*"; }
 
-# The Python the engine will use, found the same way the engine finds it.
-python_for_er2() {
+# The Python the engine will use, found the same way the engine finds it
+# (src/er2.ts, resolvePython): $ER2_PYTHON, else the interpreter the `er2`
+# command was installed with, else python3.
+er2_python() {
   if [ -n "${ER2_PYTHON:-}" ]; then echo "$ER2_PYTHON"; return; fi
-  local er2; er2=$(command -v er2) || { echo python3; return; }
-  local first; first=$(head -1 "$er2")
+  local er2 first second
+  er2=$(command -v er2 2>/dev/null) || { echo python3; return; }
+  case "$er2" in
+    *.exe|*.EXE)
+      # A Windows launcher keeps the interpreter as text near its end.
+      local found
+      found=$(tail -c 65536 "$er2" | LC_ALL=C grep -aoE '[A-Za-z]:\\[^"<>|*?]*pythonw?\.exe' | tail -1)
+      echo "${found:-python}"; return ;;
+  esac
+  first=$(head -1 "$er2"); second=$(sed -n 2p "$er2")
   case "$first" in
+    '#!/bin/sh'*)
+      # pip's wrapper for a path with spaces: '''exec' "/path/python" ...
+      second=${second#\'\'\'exec\' \"}; echo "${second%%\"*}" ;;
     '#!/usr/bin/env '*) echo "${first#\#!/usr/bin/env }" ;;
     '#!'*)              echo "${first#\#!}" ;;
     *)                  echo python3 ;;
   esac
 }
-PY=$(python_for_er2)
+
+PY=$(er2_python)
 
 # check <file> <present|absent> <pattern> <description>
 check() {
@@ -120,7 +134,20 @@ run_case display \
   present 'math display">\[x^{3} + 3 x^{2} + 3 x + 1\]' 'a SymPy value is display maths' \
   present 'math display">\[\frac{x^{2}}{2}\]'           'show() is display maths' \
   absent  '2^3 * 3^2 * 5'       'a trailing ; suppresses the value' \
-  present '<code>a plain string</code>' 'a string is shown as text, without quotes'
+  present '<code>a plain string</code>' 'a string is shown as text, without quotes' \
+  present '<td>HTML_CELL</td>'  '_repr_html_ is raw HTML in an HTML page' \
+  absent  'PLAIN_TABLE'         'the plain text is not shown beside the HTML'
+
+# Outside an HTML page the HTML form must give way to the next one.
+if wanted display; then
+  echo "• display (non-HTML)"
+  if quarto render tests/cases/display.qmd --to gfm >"$LOG/display-gfm.log" 2>&1; then
+    check tests/cases/display.md absent  'er2-html-table' 'raw HTML is not emitted for gfm'
+    check tests/cases/display.md present 'PLAIN_TABLE'    'the plain text is shown instead'
+  else
+    red "  ERROR rendering tests/cases/display.qmd to gfm"; FAIL=$((FAIL+1))
+  fi
+fi
 
 # Highlighting is a component of its own: er2.xml is ER2's syntax definition,
 # three rules on top of Python's. Assert on each rule, and on Python's still

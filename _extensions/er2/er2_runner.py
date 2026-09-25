@@ -285,6 +285,7 @@ def bundle(value):
     for mime, method in (
         ("text/latex", "_repr_latex_"),
         ("text/markdown", "_repr_markdown_"),
+        ("text/html", "_repr_html_"),
     ):
         rich = getattr(value, method, None)
         if callable(rich):

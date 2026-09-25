@@ -69,3 +69,46 @@ jobs:
       # extension directory fails here rather than after the tag is pushed.
       - name: Install this tree as an extension and render with it
         run: ./tests/clean-install.sh --local
+
+  # Windows is implemented — a launcher .exe instead of a shebang, `python`
+  # instead of `python3` — and this is the job that checks it. It runs in Git
+  # Bash, so the test scripts are the same ones as on Linux and macOS, and it
+  # leaves ER2_PYTHON unset so that the engine has to find ER2 by itself.
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Install ER2
+        run: |
+          uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+          uv tool update-shell || true
+          echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.9.38
+
+      - name: Check prerequisites (PowerShell)
+        shell: pwsh
+        run: ./install.ps1 -Check
+
+      - name: Build the engine from source
+        run: quarto call build-ts-extension src/er2.ts
+
+      # A Windows checkout turns symlinks into small text files, so the
+      # freeze project's _extensions link has to become a real copy here.
+      - name: Replace the tests/freeze/_extensions symlink with a copy
+        run: rm -rf tests/freeze/_extensions && cp -r _extensions tests/freeze/_extensions
+
+      - name: Run the tests
+        run: ./tests/run-tests.sh
+
+      - name: Install this tree as an extension and render with it
+        run: ./tests/clean-install.sh --local

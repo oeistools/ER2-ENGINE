@@ -95,29 +95,66 @@ function resolvePython(cfg) {
   ];
 }
 function er2Interpreter() {
-  const sep = Deno.build.os === "windows" ? ";" : ":";
-  for (const dir of (Deno.env.get("PATH") ?? "").split(sep)) {
+  const windows = Deno.build.os === "windows";
+  for (const dir of (Deno.env.get("PATH") ?? "").split(windows ? ";" : ":")) {
     if (!dir) continue;
-    const candidate = `${dir}/er2`;
-    let head;
-    try {
-      const file = Deno.openSync(candidate, {
-        read: true
-      });
-      const buf = new Uint8Array(512);
-      const n = file.readSync(buf) ?? 0;
-      file.close();
-      head = new TextDecoder().decode(buf.subarray(0, n));
-    } catch {
-      continue;
+    for (const name of windows ? [
+      "er2.exe",
+      "er2"
+    ] : [
+      "er2"
+    ]) {
+      const bytes = readHeadAndTail(`${dir}/${name}`);
+      if (bytes === void 0) continue;
+      return name.endsWith(".exe") ? interpreterInLauncher(bytes.tail) : interpreterInScript(bytes.head);
     }
-    const first = head.split(/\r?\n/, 1)[0];
-    if (!first.startsWith("#!")) return void 0;
-    const words = first.slice(2).trim().split(/\s+/);
-    if (/(^|\/)env$/.test(words[0])) return words.slice(1);
-    return words;
   }
   return void 0;
+}
+function readHeadAndTail(path) {
+  try {
+    const file = Deno.openSync(path, {
+      read: true
+    });
+    try {
+      const size = file.statSync().size;
+      const read = (at, length) => {
+        const buf = new Uint8Array(length);
+        file.seekSync(at, Deno.SeekMode.Start);
+        const n = file.readSync(buf) ?? 0;
+        return new TextDecoder("latin1").decode(buf.subarray(0, n));
+      };
+      const tailLength = Math.min(65536, size);
+      return {
+        head: read(0, Math.min(512, size)),
+        tail: read(size - tailLength, tailLength)
+      };
+    } finally {
+      file.close();
+    }
+  } catch {
+    return void 0;
+  }
+}
+function interpreterInScript(head) {
+  const [first, second = ""] = head.split(/\r?\n/, 2);
+  if (!first.startsWith("#!")) return void 0;
+  const viaSh = second.match(/^'''exec' "([^"]+)"/);
+  if (/^#!\s*\/bin\/sh\b/.test(first) && viaSh) return [
+    viaSh[1]
+  ];
+  const words = first.slice(2).trim().split(/\s+/);
+  if (/(^|\/)env$/.test(words[0])) return words.slice(1);
+  return words;
+}
+function interpreterInLauncher(tail) {
+  const paths = [
+    ...tail.matchAll(/[A-Za-z]:\\[^\0\r\n"<>|*?]*?pythonw?\.exe/gi)
+  ];
+  if (paths.length === 0) return void 0;
+  return [
+    paths[paths.length - 1][0]
+  ];
 }
 var kMissingPython = (python) => `ER2-ENGINE could not start Python ("${python}").
 
@@ -213,18 +250,32 @@ function outputDiv(kind, body) {
 ${body}:::
 `;
 }
-function displayMarkdown(data, opts) {
-  if (opts.latex) {
-    const rich = data["text/markdown"] ?? displayMath(data["text/latex"]);
-    if (rich !== void 0) return outputDiv("cell-output-display", `
-${rich}
+function displayMarkdown(data, opts, html) {
+  const div = (body) => outputDiv("cell-output-display", body);
+  if (opts.latex && data["text/markdown"] !== void 0) {
+    return div(`
+${data["text/markdown"]}
 
 `);
   }
-  return outputDiv("cell-output-display", codeBlock(data["text/plain"] ?? "", ""));
+  if (html && data["text/html"] !== void 0) {
+    const raw = data["text/html"].trim();
+    return div(`
+${fence(raw)}{=html}
+${raw}
+${fence(raw)}
+
+`);
+  }
+  if (opts.latex && data["text/latex"] !== void 0) {
+    return div(`
+${displayMath(data["text/latex"])}
+
+`);
+  }
+  return div(codeBlock(data["text/plain"] ?? "", ""));
 }
 function displayMath(latex) {
-  if (latex === void 0) return void 0;
   const m = latex.trim().match(/^\$\\displaystyle\s*([\s\S]*)\$$/);
   return m ? `$$${m[1].trim()}$$` : latex;
 }
@@ -298,7 +349,7 @@ function emitFigure(path, opts, first) {
 
 `);
 }
-function emitCell(code, result, opts, figureDir2) {
+function emitCell(code, result, opts, figureDir2, html) {
   if (!opts.include) return "";
   const parts = [];
   if (opts.echo) {
@@ -328,7 +379,7 @@ function emitCell(code, result, opts, figureDir2) {
           const d = out.data ?? {};
           parts.push("\n" + (d["text/markdown"] ?? d["text/plain"] ?? "") + "\n");
         } else {
-          parts.push(displayMarkdown(out.data ?? {}, opts));
+          parts.push(displayMarkdown(out.data ?? {}, opts, html));
         }
       } else if (out.type === "figure") {
         parts.push(emitFigure(`${figureDir2}/${out.name}`, opts, figures === 0));
@@ -359,9 +410,12 @@ function figureDir(input, cwd) {
     supporting: `${cwdNorm}/${base}_files`
   };
 }
+function isHtmlFormat(to) {
+  return /html|revealjs|epub|dashboard/i.test(to);
+}
 function figureFormat(cfg, to) {
   if (cfg.figFormat) return cfg.figFormat;
-  if (/html|revealjs|epub|dashboard/i.test(to)) return "svg";
+  if (isHtmlFormat(to)) return "svg";
   if (/latex|pdf|beamer/i.test(to)) return "pdf";
   return "png";
 }
@@ -426,6 +480,7 @@ var er2Engine = {
         const to = options.format?.pandoc?.to ?? "html";
         const figures = figureDir(options.target.input, options.cwd);
         const format = figureFormat(cfg, to);
+        const htmlish = isHtmlFormat(to);
         const cells = chunks.cells.map((cell) => {
           const isEr2 = typeof cell.cell_type === "object" && cell.cell_type.language === kCellLanguage;
           if (!isEr2) return {
@@ -502,7 +557,7 @@ ${trimOutput(e?.traceback ?? "")}
 
 Set "#| error: true" on the cell (or "error: true" under "er2:" in the front matter) to show the error in the rendered document instead of stopping.`);
           }
-          out.push(emitCell(code, result2, c.opts, figures.relative));
+          out.push(emitCell(code, result2, c.opts, figures.relative, htmlish));
         }
         const supporting = [];
         try {

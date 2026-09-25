@@ -199,8 +199,12 @@ evaluates with `prelude.namespace()` for that reason.
 
 ## Left for later
 
-- HTML display (`_repr_html_`), for pandas tables and the like.
-- A Windows runner in CI.
+- ~~HTML display (`_repr_html_`)~~ — done: raw HTML in HTML formats only,
+  the next representation elsewhere. No ER2 type has one, so ER2 values
+  display exactly as before.
+- ~~A Windows runner in CI~~ — done, with interpreter discovery from the
+  `er2.exe` launcher (pip's and uv's both keep the path as text) and
+  `install.ps1`.
 - Pinning CI to a released ER2 once ER2 is on PyPI, instead of its `main`.
 
 ## Not planned

@@ -39,13 +39,25 @@ check_quarto() {
   fi
 }
 
-# The Python the engine will use, found the same way the engine finds it:
-# $ER2_PYTHON, else the interpreter of the `er2` command, else python3.
+# The Python the engine will use, found the same way the engine finds it
+# (src/er2.ts, resolvePython): $ER2_PYTHON, else the interpreter the `er2`
+# command was installed with, else python3.
 er2_python() {
   if [ -n "${ER2_PYTHON:-}" ]; then echo "$ER2_PYTHON"; return; fi
-  local er2; er2=$(command -v er2) || { echo python3; return; }
-  local first; first=$(head -1 "$er2")
+  local er2 first second
+  er2=$(command -v er2 2>/dev/null) || { echo python3; return; }
+  case "$er2" in
+    *.exe|*.EXE)
+      # A Windows launcher keeps the interpreter as text near its end.
+      local found
+      found=$(tail -c 65536 "$er2" | LC_ALL=C grep -aoE '[A-Za-z]:\\[^"<>|*?]*pythonw?\.exe' | tail -1)
+      echo "${found:-python}"; return ;;
+  esac
+  first=$(head -1 "$er2"); second=$(sed -n 2p "$er2")
   case "$first" in
+    '#!/bin/sh'*)
+      # pip's wrapper for a path with spaces: '''exec' "/path/python" ...
+      second=${second#\'\'\'exec\' \"}; echo "${second%%\"*}" ;;
     '#!/usr/bin/env '*) echo "${first#\#!/usr/bin/env }" ;;
     '#!'*)              echo "${first#\#!}" ;;
     *)                  echo python3 ;;

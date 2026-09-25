@@ -27,6 +27,13 @@ All notable changes to this project are documented here. The format follows
 - GitHub Actions: `test.yml`, `clean-install.yml`, `release.yml`,
   `pages.yml`.
 
+- HTML display: a value with `_repr_html_` (a pandas `DataFrame`, say) is
+  shown as a table in HTML formats, and as LaTeX or text elsewhere.
+- Windows: the engine finds ER2's Python inside the `er2.exe` launcher, and
+  `install.ps1` checks the prerequisites; a Windows job in CI.
+- The `er2` interpreter is also found behind pip's `#!/bin/sh` wrapper, which
+  pip writes when the path has spaces or is too long for a shebang.
+
 ### Fixed
 
 - A code span showing a cell fence in prose (`` ` ```{er2} ` ``) was read as

@@ -185,28 +185,72 @@ function resolvePython(cfg: Er2Config): string[] {
 }
 
 function er2Interpreter(): string[] | undefined {
-  const sep = Deno.build.os === "windows" ? ";" : ":";
-  for (const dir of (Deno.env.get("PATH") ?? "").split(sep)) {
+  const windows = Deno.build.os === "windows";
+  for (const dir of (Deno.env.get("PATH") ?? "").split(windows ? ";" : ":")) {
     if (!dir) continue;
-    const candidate = `${dir}/er2`;
-    let head: string;
-    try {
-      const file = Deno.openSync(candidate, { read: true });
-      const buf = new Uint8Array(512);
-      const n = file.readSync(buf) ?? 0;
-      file.close();
-      head = new TextDecoder().decode(buf.subarray(0, n));
-    } catch {
-      continue;
+    for (const name of windows ? ["er2.exe", "er2"] : ["er2"]) {
+      const bytes = readHeadAndTail(`${dir}/${name}`);
+      if (bytes === undefined) continue;
+      return name.endsWith(".exe")
+        ? interpreterInLauncher(bytes.tail)
+        : interpreterInScript(bytes.head);
     }
-    const first = head.split(/\r?\n/, 1)[0];
-    if (!first.startsWith("#!")) return undefined;
-    const words = first.slice(2).trim().split(/\s+/);
-    // `#!/usr/bin/env python3` names a program, not a path.
-    if (/(^|\/)env$/.test(words[0])) return words.slice(1);
-    return words;
   }
   return undefined;
+}
+
+function readHeadAndTail(path: string): { head: string; tail: string } | undefined {
+  try {
+    const file = Deno.openSync(path, { read: true });
+    try {
+      const size = file.statSync().size;
+      const read = (at: number, length: number) => {
+        const buf = new Uint8Array(length);
+        file.seekSync(at, Deno.SeekMode.Start);
+        const n = file.readSync(buf) ?? 0;
+        // latin1 keeps every byte, so a binary launcher decodes without loss.
+        return new TextDecoder("latin1").decode(buf.subarray(0, n));
+      };
+      const tailLength = Math.min(65536, size);
+      return {
+        head: read(0, Math.min(512, size)),
+        tail: read(size - tailLength, tailLength),
+      };
+    } finally {
+      file.close();
+    }
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The interpreter named by a script's first line. pip writes `#!/path/python`
+ * when it can, and otherwise — for a path with spaces, or longer than the
+ * kernel allows in a shebang — `#!/bin/sh` followed by
+ * `'''exec' "/path/python" "$0" "$@"`.
+ */
+function interpreterInScript(head: string): string[] | undefined {
+  const [first, second = ""] = head.split(/\r?\n/, 2);
+  if (!first.startsWith("#!")) return undefined;
+  const viaSh = second.match(/^'''exec' "([^"]+)"/);
+  if (/^#!\s*\/bin\/sh\b/.test(first) && viaSh) return [viaSh[1]];
+  const words = first.slice(2).trim().split(/\s+/);
+  // `#!/usr/bin/env python3` names a program, not a path.
+  if (/(^|\/)env$/.test(words[0])) return words.slice(1);
+  return words;
+}
+
+/**
+ * The interpreter recorded inside a Windows launcher. Both kinds keep it as
+ * text near the end of the .exe: pip's (distlib) as a `#!C:\...\python.exe`
+ * line before the zip it appends, uv's trampoline as the bare path before
+ * its trailer. Either way it is the last `X:\...\python.exe` in the file.
+ */
+function interpreterInLauncher(tail: string): string[] | undefined {
+  const paths = [...tail.matchAll(/[A-Za-z]:\\[^\0\r\n"<>|*?]*?pythonw?\.exe/gi)];
+  if (paths.length === 0) return undefined;
+  return [paths[paths.length - 1][0]];
 }
 
 const kMissingPython = (python: string) =>
@@ -342,19 +386,34 @@ function outputDiv(kind: string, body: string): string {
 
 /**
  * The markdown for a display bundle, choosing as a notebook front end does:
- * markdown first (ER2's `Tex`, i.e. `latex(f)` and `show(f)`), then LaTeX
- * (every ER2 type and SymPy expression), then plain text.
+ * markdown first (ER2's `Tex`, i.e. `latex(f)` and `show(f)`), then — for an
+ * HTML page — HTML (a pandas table, say), then LaTeX (every ER2 type and SymPy
+ * expression), then plain text.
  *
  * LaTeX goes in as maths, which pandoc carries into every output format —
- * MathJax in HTML, real maths in PDF, OMML in docx — so no format has to be
- * special-cased. `latex: false` shows the plain text instead.
+ * MathJax in HTML, real maths in PDF, OMML in docx — so it needs no special
+ * case. HTML does: outside an HTML page it would be dropped or printed as
+ * tags, so there it is skipped in favour of the next representation. No ER2
+ * type has an HTML form, so this changes nothing for ER2's own values.
+ * `latex: false` skips markdown and LaTeX, not HTML.
  */
-function displayMarkdown(data: Record<string, string>, opts: CellOptions): string {
-  if (opts.latex) {
-    const rich = data["text/markdown"] ?? displayMath(data["text/latex"]);
-    if (rich !== undefined) return outputDiv("cell-output-display", `\n${rich}\n\n`);
+function displayMarkdown(
+  data: Record<string, string>,
+  opts: CellOptions,
+  html: boolean,
+): string {
+  const div = (body: string) => outputDiv("cell-output-display", body);
+  if (opts.latex && data["text/markdown"] !== undefined) {
+    return div(`\n${data["text/markdown"]}\n\n`);
   }
-  return outputDiv("cell-output-display", codeBlock(data["text/plain"] ?? "", ""));
+  if (html && data["text/html"] !== undefined) {
+    const raw = data["text/html"].trim();
+    return div(`\n${fence(raw)}{=html}\n${raw}\n${fence(raw)}\n\n`);
+  }
+  if (opts.latex && data["text/latex"] !== undefined) {
+    return div(`\n${displayMath(data["text/latex"])}\n\n`);
+  }
+  return div(codeBlock(data["text/plain"] ?? "", ""));
 }
 
 /**
@@ -362,8 +421,7 @@ function displayMarkdown(data: Record<string, string>, opts: CellOptions): strin
  * like display maths, which is how a notebook gets a large formula into a
  * one-line output area. A document has display maths, so it gets that.
  */
-function displayMath(latex: string | undefined): string | undefined {
-  if (latex === undefined) return undefined;
+function displayMath(latex: string): string {
   const m = latex.trim().match(/^\$\\displaystyle\s*([\s\S]*)\$$/);
   return m ? `$$${m[1].trim()}$$` : latex;
 }
@@ -464,6 +522,7 @@ function emitCell(
   result: ItemResult | undefined,
   opts: CellOptions,
   figureDir: string,
+  html: boolean,
 ): string {
   if (!opts.include) return "";
 
@@ -493,7 +552,7 @@ function emitCell(
           const d = out.data ?? {};
           parts.push("\n" + (d["text/markdown"] ?? d["text/plain"] ?? "") + "\n");
         } else {
-          parts.push(displayMarkdown(out.data ?? {}, opts));
+          parts.push(displayMarkdown(out.data ?? {}, opts, html));
         }
       } else if (out.type === "figure") {
         parts.push(emitFigure(`${figureDir}/${out.name}`, opts, figures === 0));
@@ -533,6 +592,11 @@ function figureDir(input: string, cwd: string): {
   };
 }
 
+/** Whether pandoc's target `to` is an HTML page, which can take raw HTML. */
+function isHtmlFormat(to: string): boolean {
+  return /html|revealjs|epub|dashboard/i.test(to);
+}
+
 /**
  * The figure format the output format wants: vector for HTML (sharp at any
  * zoom) and PDF (so LaTeX can include it), bitmap for everything else, which
@@ -540,7 +604,7 @@ function figureDir(input: string, cwd: string): {
  */
 function figureFormat(cfg: Er2Config, to: string): string {
   if (cfg.figFormat) return cfg.figFormat;
-  if (/html|revealjs|epub|dashboard/i.test(to)) return "svg";
+  if (isHtmlFormat(to)) return "svg";
   if (/latex|pdf|beamer/i.test(to)) return "pdf";
   return "png";
 }
@@ -635,6 +699,7 @@ const er2Engine: ExecutionEngineDiscovery = {
         const to = options.format?.pandoc?.to ?? "html";
         const figures = figureDir(options.target.input, options.cwd);
         const format = figureFormat(cfg, to);
+        const htmlish = isHtmlFormat(to);
 
         // Pass 1: collect every cell and inline expression we are going to
         // run, in document order, so that `` `{er2} p` `` in prose sees
@@ -722,7 +787,7 @@ const er2Engine: ExecutionEngineDiscovery = {
                 `rendered document instead of stopping.`,
             );
           }
-          out.push(emitCell(code, result, c.opts, figures.relative));
+          out.push(emitCell(code, result, c.opts, figures.relative, htmlish));
         }
 
         const supporting: string[] = [];

@@ -36,7 +36,7 @@ factor(x^2 - 1), phi(2^61 - 1), 1/3
 | --- | --- |
 | **Quarto** | 1.9 or newer |
 | **ER2** | installed, with the `er2` command on `PATH` (or named explicitly) |
-| **Platforms** | Linux and macOS, both in CI; Windows is implemented but not tested |
+| **Platforms** | Linux, macOS and Windows, all three in CI |
 | **Install** | `quarto add oeistools/ER2-ENGINE` |
 | **Licence** | MIT |
 
@@ -77,6 +77,7 @@ prerequisites first and tells you exactly what is missing:
 ```bash
 ./install.sh            # check, then install into the current project
 ./install.sh --check    # report only, install nothing
+./install.ps1 -Check    # the same on Windows
 ```
 
 ## Using it
@@ -192,6 +193,8 @@ installs the working tree instead.
   on Linux and macOS: installs ER2 from its repository and Quarto, rebuilds
   the engine and **fails if the committed `er2.js` is stale**, then runs the
   tests, the examples, the docs site and a clean install of the working tree.
+  A Windows job runs `install.ps1 -Check`, the tests and the clean install,
+  in Git Bash, with ER2 found by the engine itself.
 - [`clean-install.yml`](.github/workflows/clean-install.yml), weekly: installs
   the *published* release with `quarto add` and renders with it.
 - [`release.yml`](.github/workflows/release.yml), on a `v*` tag: checks the
@@ -207,8 +210,8 @@ installs the working tree instead.
   cannot also run `{python}` cells. ER2's Jupyter route does not have this
   limit.
 - Only Matplotlib figures are captured.
-- Rich output is LaTeX, markdown and text; HTML representations (a pandas
-  table's `_repr_html_`, for instance) are shown as text for now.
+- HTML output (`_repr_html_`, such as a pandas table) is used only in HTML
+  formats; elsewhere the value falls back to LaTeX or plain text.
 
 ## License
 

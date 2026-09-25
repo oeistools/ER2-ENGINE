@@ -1,0 +1,106 @@
+---
+title: "Options"
+---
+
+## At a glance
+
+| Option | Where | Default | Effect |
+| --- | --- | --- | --- |
+| `eval` | cell, document | `true` | Run the cell. |
+| `echo` | cell, document | `true` | Show the source. |
+| `output` | cell, document | `true` | Show the output; `asis` inserts printed text as markdown. |
+| `error` | cell, document | `false` | Render exceptions instead of stopping. |
+| `warning` | cell, document | `true` | Show what the cell wrote to stderr. |
+| `include` | cell, document | `true` | `false` runs the cell but drops it from the output. |
+| `latex` | cell, document | `true` | Show values as maths; `false` shows plain text. |
+| `classes` | cell | — | Extra CSS classes for the code block. |
+| `filename` | cell | — | Filename label above the code block. |
+| `label` | cell | — | Cell label; `fig-…` makes the first figure cross-referenceable. |
+| `fig-cap` | cell | — | Figure caption. |
+| `fig-alt` | cell | — | Alternative text of a figure. |
+| `fig-width` | cell | — | Width of a figure. |
+| `python` | document | see below | A Python that can `import er2`. |
+| `timeout` | document | `300` | Seconds before the render gives up. |
+| `highlight` | document | `true` | Inject the ER2 syntax definition. |
+| `prelude` | document | — | ER2 code run once, before the first cell. |
+| `fig-format` | document | by format | `svg`, `png` or `pdf`. |
+| `fig-dpi` | document | `96` | Resolution of bitmap figures. |
+
+Cell options are `#|` comments at the top of a cell. Document options go
+under `er2:` in the front matter, and the cell options given there are the
+defaults for every cell.
+
+```yaml
+---
+engine: er2
+er2:
+  python: /path/to/python
+  timeout: 300
+  prelude: |
+    sym x, y
+  echo: true
+  error: false
+---
+```
+
+## `echo`, `output`, `include`
+
+```{er2}
+#| echo: false
+print("this cell's source is hidden")
+```
+
+```{er2}
+#| output: false
+print("this output is hidden")
+```
+
+## `output: asis`
+
+What the cell prints is inserted as markdown, so a cell can write the
+document:
+
+```{er2}
+#| echo: false
+#| output: asis
+for n in (5, 7, 11):
+    print(f"- $2^{{{n}}} - 1 = {2^n - 1}$, prime: {isprime(2^n - 1)}")
+```
+
+## `error`
+
+By default an exception stops the render, reporting the cell and the ER2
+traceback: a document that is supposed to be correct should not quietly
+publish an error. When the error is the point, ask for it:
+
+```{er2}
+#| error: true
+1/0
+```
+
+The session survives either way; later cells still run. Warnings are not
+errors — they go to stderr, are shown, and never stop a render
+(`warning: false` hides them).
+
+## `latex`
+
+```{er2}
+sym x
+(x + 1)^2 / 2
+```
+
+```{er2}
+#| latex: false
+(x + 1)^2 / 2
+```
+
+## `prelude`
+
+ER2 code run before the first cell, for instance to declare the symbols
+every cell uses. An error in the prelude stops the render.
+
+## `python`
+
+Without it the engine uses `ER2_PYTHON`, then the Python behind the `er2`
+command on `PATH`, then `python3`. See
+[Get started](getting-started.qmd#how-the-engine-finds-er2).

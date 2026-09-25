@@ -228,7 +228,7 @@ function displayMath(latex) {
   const m = latex.trim().match(/^\$\\displaystyle\s*([\s\S]*)\$$/);
   return m ? `$$${m[1].trim()}$$` : latex;
 }
-var kInlineEr2 = /`\{er2\}([^`]+)`/g;
+var kInlineEr2 = /(?<!`)`\{er2\}\s+([^`\s][^`]*)`(?!`)/g;
 function proseRuns(md) {
   const runs = [];
   const fence2 = /^(\s*)(`{3,}|~{3,}).*$/gm;
@@ -479,10 +479,11 @@ var er2Engine = {
             }
             const slice = results.slice(at, at + n);
             at += n;
-            const failed = slice.find((r) => r.error);
-            if (failed && !cfg.error) {
-              const e = failed.outputs[0];
-              throw new Error(`ER2 error in an inline {er2} expression:
+            const failedAt = slice.findIndex((r) => r.error);
+            if (failedAt !== -1 && !cfg.error) {
+              const e = slice[failedAt].outputs[0];
+              const expr = job[at - n + failedAt].code;
+              throw new Error(`ER2 error in the inline expression \`{er2} ${expr}\`:
 
 ${trimOutput(e?.traceback ?? "")}
 

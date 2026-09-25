@@ -1,5 +1,7 @@
 # ER2-ENGINE
 
+[![CI](https://github.com/oeistools/ER2-ENGINE/actions/workflows/test.yml/badge.svg)](https://github.com/oeistools/ER2-ENGINE/actions/workflows/test.yml)
+[![Pages](https://github.com/oeistools/ER2-ENGINE/actions/workflows/pages.yml/badge.svg)](https://oeistools.github.io/ER2-ENGINE/)
 [![Quarto](https://img.shields.io/badge/quarto-%E2%89%A5%201.9-2596be)](https://quarto.org)
 [![ER2](https://img.shields.io/badge/ER2-mathematical%20Python-8a2be2)](https://github.com/oeistools/ER2)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -7,6 +9,8 @@
 Run [ER2](https://github.com/oeistools/ER2) code inside
 [Quarto](https://quarto.org) documents as ` ```{er2} ` cells, and have it
 highlighted as ER2.
+
+**[Documentation →](https://oeistools.github.io/ER2-ENGINE/)**
 
 This repository is the sibling of
 [PARI-GP-ENGINE](https://github.com/oeistools/PARI-GP-ENGINE): the same kind
@@ -32,7 +36,7 @@ factor(x^2 - 1), phi(2^61 - 1), 1/3
 | --- | --- |
 | **Quarto** | 1.9 or newer |
 | **ER2** | installed, with the `er2` command on `PATH` (or named explicitly) |
-| **Platforms** | Linux; macOS and Windows are implemented but not yet tested |
+| **Platforms** | Linux and macOS, both in CI; Windows is implemented but not tested |
 | **Install** | `quarto add oeistools/ER2-ENGINE` |
 | **Licence** | MIT |
 
@@ -65,6 +69,14 @@ installed in. So there is no kernel to install and no daemon to restart.
 
 ```bash
 quarto add oeistools/ER2-ENGINE
+```
+
+Or clone the repository and run the installer, which checks the
+prerequisites first and tells you exactly what is missing:
+
+```bash
+./install.sh            # check, then install into the current project
+./install.sh --check    # report only, install nothing
 ```
 
 ## Using it
@@ -137,6 +149,21 @@ then closed: SVG for HTML, PDF for LaTeX, PNG otherwise.
 honours `freeze` only in a render of a whole project; a single file rendered
 on its own is always executed.
 
+## Examples
+
+`examples/` holds a numbered series, each document short and about one thing.
+`make examples` renders all of them. They use ER2 0.7 features (matrices,
+finite fields, series); the engine itself also works with older ER2.
+
+| | |
+| --- | --- |
+| [`hello.qmd`](examples/hello.qmd) | The smallest thing that works. |
+| [`01-syntax.qmd`](examples/01-syntax.qmd) | The five differences from Python, and nothing else. |
+| [`02-number-theory.qmd`](examples/02-number-theory.qmd) | Factorisation, arithmetic functions and primes, on PARI. |
+| [`03-algebra.qmd`](examples/03-algebra.qmd) | Matrices, finite fields, resultants, Gröbner bases, number fields. |
+| [`04-series.qmd`](examples/04-series.qmd) | Power series, generating functions, Dirichlet series, Euler products. |
+| [`05-plots.qmd`](examples/05-plots.qmd) | Matplotlib figures with captions and cross-references. |
+
 ## Development
 
 ```bash
@@ -145,11 +172,43 @@ make test       # render the test documents and check the output
 make examples   # render examples/
 make check      # all of the above, plus lint
 make doctor     # report whether quarto and er2 are usable
+make lint       # ruff on the runner
+make docs       # render the documentation site into docs/_site
+make clean-install  # install the published release into an empty directory
 ```
 
 `ER2_PYTHON=/path/to/ER2/.venv/bin/python make test` runs the tests against a
 particular ER2 checkout; the figure tests are skipped where Matplotlib is not
 installed.
+
+`make clean-install` is the one check that does not use the repository: it
+runs `quarto add` in an empty directory outside it and renders a document
+with execution, inline code, highlighting and a figure. `REF=--local`
+installs the working tree instead.
+
+### Continuous integration
+
+- [`test.yml`](.github/workflows/test.yml), on every push and pull request,
+  on Linux and macOS: installs ER2 from its repository and Quarto, rebuilds
+  the engine and **fails if the committed `er2.js` is stale**, then runs the
+  tests, the examples, the docs site and a clean install of the working tree.
+- [`clean-install.yml`](.github/workflows/clean-install.yml), weekly: installs
+  the *published* release with `quarto add` and renders with it.
+- [`release.yml`](.github/workflows/release.yml), on a `v*` tag: checks the
+  tag agrees with `VERSION`, `_extension.yml` and `CITATION.cff`, runs
+  everything, publishes the release with that version's changelog section,
+  and installs what it just published on Linux and macOS.
+- [`pages.yml`](.github/workflows/pages.yml): renders `docs/` and deploys it
+  to GitHub Pages.
+
+## Limitations
+
+- Quarto allows **one engine per document**, so a document using `er2`
+  cannot also run `{python}` cells. ER2's Jupyter route does not have this
+  limit.
+- Only Matplotlib figures are captured.
+- Rich output is LaTeX, markdown and text; HTML representations (a pandas
+  table's `_repr_html_`, for instance) are shown as text for now.
 
 ## License
 

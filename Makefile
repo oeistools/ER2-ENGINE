@@ -23,7 +23,7 @@ VERSION := $(shell cat VERSION)
 
 .DEFAULT_GOAL := help
 .PHONY: help build test examples check doctor clean distclean version bump-version \
-        package release-check lint fmt
+        clean-install package release-check tag lint fmt docs docs-preview
 
 help: ## Show this help
 	@echo "ER2-ENGINE $(VERSION)"
@@ -39,8 +39,17 @@ $(ENGINE): $(SOURCE)
 test: build ## Render the test documents and check their output
 	./tests/run-tests.sh
 
+clean-install: ## Install the published extension into an empty directory and render with it
+	./tests/clean-install.sh $(if $(REF),$(REF),)
+
 examples: build ## Render every document under examples/
 	$(QUARTO) render examples
+
+docs: build ## Render the documentation site into docs/_site
+	$(QUARTO) render docs
+
+docs-preview: build ## Serve the documentation site with live reload
+	$(QUARTO) preview docs
 
 lint: ## Lint the runner with ruff
 	$(RUFF) check $(RUNNER)
@@ -51,13 +60,7 @@ fmt: ## Reformat the runner with ruff
 	$(RUFF) check --fix $(RUNNER)
 
 doctor: ## Report whether Quarto and ER2 are usable
-	@command -v $(QUARTO) >/dev/null && echo "quarto $$($(QUARTO) --version)" \
-	  || { echo "quarto: not found (https://quarto.org)"; exit 1; }
-	@py="$${ER2_PYTHON:-$$(head -1 "$$(command -v er2)" 2>/dev/null | sed -n 's|^#! *\(/usr/bin/env  *\)\{0,1\}||p')}"; \
-	 py="$${py:-python3}"; \
-	 v=$$($$py -c 'import er2; print(er2.__version__)' 2>/dev/null) \
-	   && echo "er2 $$v ($$py)" \
-	   || { echo "er2: $$py cannot import er2 (https://github.com/oeistools/ER2)"; exit 1; }
+	@./install.sh --check
 
 check: doctor lint build ## Run every check: lint, tests and examples
 	@$(PYTHON) -c "import xml.dom.minidom as m; m.parse('$(SYNTAX)')" \
@@ -84,8 +87,14 @@ release-check: ## Check VERSION, _extension.yml, CITATION.cff and CHANGELOG agre
 	 grep -q "^## \[$$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no section for $$v" >&2; fail=1; }; \
 	 [ $$fail -eq 0 ] && echo "version $$v is consistent everywhere"; exit $$fail
 
+tag: release-check ## Tag the current commit and push it, which triggers the release workflow
+	@v="$(VERSION)"; \
+	 git diff --quiet || { echo "working tree is dirty" >&2; exit 1; }; \
+	 git tag -a "v$$v" -m "ER2-ENGINE v$$v" && git push origin "v$$v" && \
+	 echo "pushed v$$v — the release workflow takes it from here"
+
 clean: ## Remove rendered documents and caches
-	rm -rf .quarto _site _freeze tests/freeze/_freeze tests/freeze/.quarto
+	rm -rf .quarto _site docs/_site docs/.quarto _freeze tests/freeze/_freeze tests/freeze/.quarto
 	rm -f  examples/*.html tests/cases/*.html tests/cases/*.md tests/expect-fail/*.html tests/freeze/*.html
 	rm -rf examples/*_files tests/cases/*_files tests/expect-fail/*_files tests/freeze/*_files
 	rm -rf dist

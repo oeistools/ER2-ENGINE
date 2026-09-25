@@ -1,0 +1,39 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "ER2-ENGINE"
+  description: "Run ER2 inside Quarto documents"
+  site-url: "https://oeistools.github.io/ER2-ENGINE/"
+  repo-url: "https://github.com/oeistools/ER2-ENGINE"
+  repo-actions: [source, issue]
+  page-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: getting-started.qmd
+        text: Get started
+      - href: options.qmd
+        text: Options
+      - href: output.qmd
+        text: Output and figures
+      - href: how-it-works.qmd
+        text: How it works
+    right:
+      - icon: github
+        href: https://github.com/oeistools/ER2-ENGINE
+        aria-label: GitHub
+  page-footer:
+    center: "MIT licensed. ER2 is MIT licensed by its authors."
+
+# Every page runs on the engine, so a broken engine breaks the site build.
+engine: er2
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true
+    anchor-sections: true

@@ -1,0 +1,43 @@
+name: clean-install
+
+# Install the published extension the way a user does and render with it.
+# The weekly run is the point: it is what notices a release broken by a newer
+# Quarto or ER2, months after the release itself. Releases published by
+# release.yml are checked by its own verify-install job, because GitHub does
+# not start workflow runs from GITHUB_TOKEN events (PARI-GP-ENGINE learned
+# this the hard way).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Release to install (e.g. v0.1.0), or --local for this tree"
+        required: false
+        default: ""
+
+jobs:
+  clean-install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Install ER2
+        run: uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.9.38
+
+      - name: Install the extension and render with it
+        run: |
+          ref='${{ github.event.inputs.ref }}'
+          ./tests/clean-install.sh ${ref:+"$ref"}

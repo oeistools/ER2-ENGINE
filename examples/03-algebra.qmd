@@ -1,0 +1,118 @@
+---
+title: "03 · Algebra"
+engine: er2
+format: html
+---
+
+Linear algebra, finite fields, polynomials over $\mathbb{F}_p$, resultants,
+Gröbner bases and number fields — each one a single ER2 call, sent to PARI
+or SymPy as fits. Adapted from ER2's `examples/algebra.qmd`.
+
+## Linear algebra
+
+Matrices are SymPy's `Matrix`. Rational entries go to PARI and symbolic
+ones to SymPy, and both routes agree.
+
+```{er2}
+A = Matrix([[2, 4, 4], [-6, 6, 12], [10, -4, -16]])
+print(det(A), rank(A))
+print(charpoly(A))
+print(smith_form(A))
+```
+
+A singular matrix has a kernel; the basis is echelonized, so it does not
+depend on which backend computed it.
+
+```{er2}
+C = Matrix([[1, 2, 3], [2, 4, 6], [1, 1, 1]])
+print(rank(C), kernel(C)[0].T)
+```
+
+A symbolic matrix goes to SymPy instead:
+
+```{er2}
+sym c
+det(Matrix([[c, 1], [1, c]]))
+```
+
+## Finite fields
+
+`GF(9)` is `F_3[a]/(a^2 + a + 2)`, with the defining polynomial from
+PARI's `ffinit`.
+
+```{er2}
+F = GF(9)
+a = F.gen()
+print(F, F.order, F.modulus())
+print(a^4, a.order(), a.trace(), a.norm())
+minpoly(a)
+```
+
+Factoring over `F_2`, in the same form SymPy would give:
+
+```{er2}
+sym x, y
+factor(x^8 - x, modulus=2)
+```
+
+## Resultants and discriminants
+
+The resultant vanishes exactly when two polynomials share a root.
+
+```{er2}
+print(resultant(x^2 + 1, x^3 - 2, x))
+print(discriminant(x^3 + x + 1))
+```
+
+ER2 uses the standard sign convention, which is PARI's, so the resultant
+is **not** symmetric: swapping the arguments costs
+$(-1)^{\deg f \cdot \deg g}$.
+
+```{er2}
+print(resultant(x - 1, x^3 - 8, x), resultant(x^3 - 8, x - 1, x))
+```
+
+## Gröbner bases
+
+```{er2}
+G = groebner([x^2 + y^2 - 1, x - y], x, y)
+print(list(G))
+print(reduce(x^2 + y^2, G))
+```
+
+`reduce(f, G) == 0` is what tests membership of the ideal. Beware that
+`f in G` is Python's list membership, which asks something else:
+
+```{er2}
+print(reduce(x^2 + y^2 - 1, G) == 0, (x^2 + y^2 - 1) in G)
+```
+
+## Number fields
+
+In $\mathbb{Q}(\sqrt{-5})$ unique factorization fails: the class number
+is 2.
+
+```{er2}
+K = NumberField(x^2 + 5)
+print(K.degree, K.discriminant, K.class_number(), K.class_group())
+K
+```
+
+That failure is visible in how rational primes split. The prime 2
+ramifies, and 3 splits into two primes:
+
+```{er2}
+print(K.factor(2))
+print(K.factor(3))
+```
+
+Elements are `Mod` objects with a polynomial modulus, so arithmetic works
+without a separate element type:
+
+```{er2}
+K.gen()^2
+```
+
+The class number of $\mathbb{Q}(\sqrt{-5})$ is
+`{er2} latex(K.class_number())`, and its discriminant is
+`{er2} latex(K.discriminant)`.

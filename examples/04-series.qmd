@@ -1,0 +1,121 @@
+---
+title: "04 · Series"
+engine: er2
+format: html
+---
+
+Power series, generating functions, Dirichlet series and Euler products.
+Adapted from ER2's `examples/series.qmd`.
+
+## Power series
+
+A power series is an ordinary expression with an `O()` term — not a new
+type (D18). So everything Python and SymPy already do keeps working.
+
+```{er2}
+sym x
+s = series(exp(x), x, 0, 6)
+t = series(1/(1 - x), x, 0, 6)
+print(s)
+print(t)
+```
+
+Multiplication is the one thing that needs care: SymPy leaves `s * t`
+**unevaluated**, so `expand` is what does the work. ER2 sends that to
+PARI, which is 3 to 13 times faster depending on the precision.
+
+```{er2}
+expand(s * t)
+```
+
+Division is where ER2 deliberately goes further than SymPy (D21):
+`sympy.expand` leaves a pile of nested fractions, while ER2 returns the
+series — the same one `series(exp(x)*(1 - x))` gives.
+
+```{er2}
+print(expand(s / t))
+print(series(exp(x) * (1 - x), x, 0, 6))
+```
+
+Three operations PARI has and SymPy has none:
+
+```{er2}
+print(series_reverse(series(exp(x) - 1, x, 0, 6)))   # log(1 + x)
+print(series_laplace(series(exp(x), x, 0, 6)))       # EGF to OGF
+print(hadamard_product(t, t))                        # coefficientwise
+```
+
+## Generating functions
+
+`generating_function` takes anything iterable, so a list works and so
+does an OEIS sequence.
+
+```{er2}
+fibonacci_terms = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+f = generating_function(fibonacci_terms, x)
+f
+```
+
+The generating function of the Fibonacci numbers is $x/(1-x-x^2)$.
+Multiplying the series by $1 - x - x^2$ leaves $x$, which is the
+identity stated as a computation rather than asserted:
+
+```{er2}
+expand(f * (1 - x - x^2))
+```
+
+The exponential kind divides by $n!$, so the all-ones sequence gives
+$e^x$:
+
+```{er2}
+generating_function([1, 1, 1, 1, 1, 1], x, exponential=True)
+```
+
+## Dirichlet series
+
+A Dirichlet series is a type (D19), because a bare list of coefficients
+cannot render as mathematics and would be indexed from 0. `z[6]` is
+$a_6$.
+
+```{er2}
+z = DirichletSeries.zeta(20)
+mu = DirichletSeries.moebius(20)
+print(z)
+print(mu)
+```
+
+`*` is Dirichlet convolution, so $\zeta(s) \cdot 1/\zeta(s) = 1$: every
+coefficient after the first is zero.
+
+```{er2}
+z * mu
+```
+
+The coefficients of $1/\zeta$ are the Möbius function, and those of
+$\zeta^2$ count divisors:
+
+```{er2}
+print([mu[n] for n in range(1, 13)])
+print([(z * z)[n] for n in range(1, 13)])
+print([numdiv(n) for n in range(1, 13)])
+```
+
+## Euler products
+
+`DirichletSeries.euler` builds a series from its local factors. The
+callback gets the prime `p` and a variable standing for $p^{-s}$, so
+the Euler factor of $1/\zeta$ is $1 - p^{-s}$:
+
+```{er2}
+DirichletSeries.euler(lambda p, local: 1 - local, 20) == mu
+```
+
+And $\zeta(s)^2$ has the local factor $(1 - p^{-s})^{-2}$:
+
+```{er2}
+DirichletSeries.euler(lambda p, local: 1/(1 - local)^2, 12)
+```
+
+The Möbius coefficient $\mu(30)$ is
+`{er2} latex(DirichletSeries.moebius(30)[30])`, and the number of
+divisors of 12 is `{er2} latex((z * z)[12])`.

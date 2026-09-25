@@ -372,8 +372,15 @@ function displayMath(latex: string | undefined): string | undefined {
  * Inline code: `` `{er2} expr` `` in prose. Quarto's own inline syntax, matched
  * only outside fenced blocks so that a documentation page may show the syntax
  * without it being evaluated.
+ *
+ * The opening backtick must stand alone: in prose such as "` ```{er2} ` cells"
+ * the `{er2}` follows a run of backticks, and is a code span that *shows* a
+ * cell fence, not an expression. Without the lookbehind that span was read
+ * as an empty expression and the render failed with a bare SyntaxError.
+ * The expression must also be separated from `{er2}` by whitespace and not be
+ * blank, which is Quarto's own rule for inline code.
  */
-const kInlineEr2 = /`\{er2\}([^`]+)`/g;
+const kInlineEr2 = /(?<!`)`\{er2\}\s+([^`\s][^`]*)`(?!`)/g;
 
 /** Split markdown into fenced-code and prose runs; only prose is scanned. */
 function proseRuns(md: string): { text: string; code: boolean }[] {
@@ -683,11 +690,13 @@ const er2Engine: ExecutionEngineDiscovery = {
             }
             const slice = results.slice(at, at + n);
             at += n;
-            const failed = slice.find((r) => r.error);
-            if (failed && !cfg.error) {
-              const e = failed.outputs[0];
+            const failedAt = slice.findIndex((r) => r.error);
+            if (failedAt !== -1 && !cfg.error) {
+              const e = slice[failedAt].outputs[0];
+              // Results come back one per job item, in job order.
+              const expr = job[at - n + failedAt].code;
               throw new Error(
-                `ER2 error in an inline {er2} expression:\n\n` +
+                `ER2 error in the inline expression \`{er2} ${expr}\`:\n\n` +
                   `${trimOutput(e?.traceback ?? "")}\n\n` +
                   `Set "error: true" under "er2:" in the front matter to ` +
                   `show the error in the rendered document instead of stopping.`,

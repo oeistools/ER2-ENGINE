@@ -3,6 +3,10 @@
 <!--
   Syntax highlighting for ER2 (ARCHITECTURE.md §1.1, §1.2).
 
+  Copied from ER2's examples/er2.xml (MIT). One change: ER2's comment
+  had a double hyphen, which XML does not allow inside a comment; pandoc
+  tolerates it, a strict parser does not.
+
   A KDE syntax definition, which is what Pandoc's highlighter reads.
   Quarto loads it through `syntax-definitions:` in a document's front
   matter, so a block displayed as `er2` is highlighted as ER2 rather
@@ -19,7 +23,7 @@
     - `^^`, `^^=`  XOR; plain `^` is a power and Python's operator
                    rule already covers it
   Strings and comments are Python's, so `sym` inside one is not
-  highlighted as a keyword -- the same rule the preparser follows.
+  highlighted as a keyword: the same rule the preparser follows.
 -->
 <language name="ER2" section="Sources" version="1" kateversion="5.0"
           extensions="*.er2" mimetype="text/x-er2"

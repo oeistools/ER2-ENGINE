@@ -1,0 +1,76 @@
+---
+title: "Get started"
+---
+
+## Requirements
+
+- **Quarto ≥ 1.9**, because engine extensions do not exist in earlier
+  versions.
+- **ER2**, with its `er2` command on your `PATH`:
+
+  ```bash
+  uv tool install git+https://github.com/oeistools/ER2
+  ```
+
+  For figures, install Matplotlib in the same environment:
+
+  ```bash
+  uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+  ```
+
+## Install the extension
+
+In the directory of your document or project:
+
+```bash
+quarto add oeistools/ER2-ENGINE
+```
+
+Or clone the repository and run `./install.sh`, which checks the
+prerequisites first and says exactly what is missing (`./install.sh --check`
+only reports).
+
+## Your first document
+
+````markdown
+---
+title: "Mersenne primes"
+engine: er2
+---
+
+```{er2}
+[p for p in range(2, 130) if isprime(2^p - 1)]
+```
+````
+
+```bash
+quarto render mersenne.qmd
+```
+
+That cell, run here:
+
+```{er2}
+[p for p in range(2, 130) if isprime(2^p - 1)]
+```
+
+## How the engine finds ER2
+
+The engine runs your cells with the Python ER2 is installed in. It uses,
+in order:
+
+1. `er2: python:` in the document's front matter;
+2. the `ER2_PYTHON` environment variable;
+3. the interpreter of the `er2` command on `PATH` — read from the first line
+   of that script, which is where `uv tool install`, `pipx` and `pip`
+   record it;
+4. `python3`.
+
+If that Python cannot `import er2`, the render stops and says how to fix it.
+
+## ER2's own route: Jupyter
+
+ER2 also runs in Quarto through its Jupyter kernel (`jupyter: er2`, with
+` ```{python} ` cells). Use that route when you want your editor's Python
+tooling inside cells, or need to mix languages; use this engine when you
+want the source to say ` ```{er2} ` and no Jupyter at all. See
+[How it works](how-it-works.qmd).

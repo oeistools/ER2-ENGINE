@@ -19,4 +19,16 @@ All notable changes to this project are documented here. The format follows
 - Matplotlib figures, with captions and cross-references.
 - ER2's syntax definition, injected automatically.
 - Freezing, with a relative syntax-definition path in `_freeze/`.
-- `tests/run-tests.sh` and `make test`.
+- `tests/run-tests.sh` and `make test`; `tests/clean-install.sh` and
+  `make clean-install`.
+- `install.sh` with `--check`, used by `make doctor`.
+- Examples: `hello.qmd` and the series `01-syntax` to `05-plots`.
+- The documentation site in `docs/`, rendered by the engine itself.
+- GitHub Actions: `test.yml`, `clean-install.yml`, `release.yml`,
+  `pages.yml`.
+
+### Fixed
+
+- A code span showing a cell fence in prose (`` ` ```{er2} ` ``) was read as
+  an empty inline expression and stopped the render. An inline error now
+  quotes the expression.

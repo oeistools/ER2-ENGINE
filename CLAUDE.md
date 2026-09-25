@@ -23,7 +23,11 @@ _extensions/er2/
 src/er2.ts          the engine source; edit this
 tests/              run-tests.sh, cases/*.qmd, expect-fail/*.qmd,
                     freeze/ (a project of its own, see below)
-examples/           hello.qmd and the series to come
+examples/           hello.qmd and the numbered series 01..05
+docs/               the documentation site (its own Quarto project;
+                    docs/_extensions is a symlink to ../_extensions)
+install.sh          prerequisite check (--check) and quarto add
+.github/workflows/  test, clean-install, release, pages
 _quarto.yml         makes the repo a Quarto project so examples/ and tests/
                     find _extensions without installing the extension
 ```
@@ -84,6 +88,19 @@ outside the project root makes Quarto fall back to jupyter.
 `er2.prelude.inject`, `er2.session.start`, `er2.printing.latex`, and
 `er2.session._is_internal` guarded by a fallback. It is tested against both
 ER2 0.4.2 and 0.7.0 on this machine.
+
+**A code span can contain `{er2}` without being inline code**, as in
+"` ```{er2} ` cells". The inline pattern requires a lone opening backtick
+and a non-blank expression; `tests/cases/inline.qmd` pins both.
+
+**No Node here**, so markdownlint cannot run locally, and CI does not run it
+yet either.
+
+## Releasing
+
+As in PARI-GP-ENGINE: `make bump-version V=x.y.z`, write the `CHANGELOG.md`
+section by hand, `make release-check`, `make tag`. **Only the maintainer
+tags**: pushing a `v*` tag publishes a release.
 
 ## Style
 

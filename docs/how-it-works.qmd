@@ -1,0 +1,60 @@
+---
+title: "How it works"
+---
+
+## One process per document
+
+Quarto's engine API hands an engine the whole document and takes markdown
+back. So the engine collects every ` ```{er2} ` cell and every inline
+expression, in document order, into one JSON job, and starts one process:
+
+```text
+er2.js ──JSON job──► python er2_runner.py ──JSON result──► er2.js
+                          │
+                  er2.preparse, er2.prelude
+                          │
+                SymPy        cypari2 → PARI
+```
+
+`er2_runner.py` ships inside the extension. It runs under the Python ER2
+is installed in, executes every cell in one ER2 namespace — which is what
+makes state carry across cells — and returns, for each cell, a
+notebook-shaped list of outputs: streams, display values with their
+LaTeX, figures, and an error if there was one.
+
+Because the result is structured, nothing has to be parsed out of text.
+The runner keeps its own copy of the standard output for the result and
+captures each cell's output separately — at the Python level, so `print`
+and `show` keep their order, and at the file-descriptor level, so C code
+such as PARI cannot write into the result.
+
+## Why not Jupyter
+
+ER2 runs in Quarto through its Jupyter kernel too, with ` ```{python} `
+cells. But Quarto chooses the engine from a block's language before any
+kernel is consulted, and its Jupyter engine does not claim `er2`; so an
+` ```{er2} ` block under Jupyter is silently not executed. ER2 measured
+this, and decided against an engine that would reimplement Quarto's
+Jupyter engine to run a kernel.
+
+This engine is not that engine. It runs ER2 the way PARI-GP-ENGINE runs
+gp: as an external program, in batch.
+
+| | `jupyter: er2` | `engine: er2` |
+| --- | --- | --- |
+| Cells are written | ` ```{python} ` | ` ```{er2} ` |
+| Needs Jupyter | yes | no |
+| Kernel daemon | yes | no |
+| Editor Python tooling in cells | yes | no |
+| Mix with other Python cells | yes | no — one engine per document |
+
+## Highlighting
+
+`er2.xml` is ER2's own syntax definition: `sym`, the `5r` raw literals and
+`^^`, then all of Python's rules. The engine hands it to pandoc with a
+path relative to the document, so a frozen result replays on any machine.
+
+```er2
+sym x, y            # sym in a comment is just a comment
+z = x^2 ^^ 3r       # "and ^^ in a string is text"
+```

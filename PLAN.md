@@ -66,6 +66,14 @@ change ER2 and does not ask ER2 to change.
 | **Runner** | `_extensions/er2/er2_runner.py`. Plain Python, stdlib plus `er2`. Reads a JSON job on stdin, executes every cell in one ER2 namespace, writes a JSON result on stdout. |
 | **Highlighting** | `_extensions/er2/er2.xml`, ER2's own KDE syntax definition (`sym`, `5r`, `^^`, then `##Python`), injected into pandoc automatically. |
 
+## Status
+
+| Milestone | Status |
+| --- | --- |
+| M1 — cells execute | ✅ done (2026-09-25) |
+| M2 — rich output and figures | ✅ done (2026-09-25) |
+| M3 — packaging, docs, CI | ✅ in the repository; CI and the first release not yet verified |
+
 ## Milestones
 
 No calendar dates. A milestone is done when its acceptance criteria pass.
@@ -171,6 +179,29 @@ goes to the stderr stream, shown but never stopping a render.
 
 **MIT.** ER2 is MIT too; the runner imports it at run time, nothing is
 vendored except `er2.xml`, whose licence is MIT and whose source is noted.
+
+## Found while building
+
+**Freeze is honoured only in whole-project renders.** Rendering one file
+always executes it, so the freeze test renders `tests/freeze/` as a project
+of its own, with a value that changes on every execution. PARI-GP-ENGINE's
+freeze test renders a single file and passes only because gp's `random()`
+has a fixed seed; that is recorded for a fix there.
+
+**A code span that shows a fence is not an inline expression.** Prose like
+"` ```{er2} ` cells" contains `` `{er2} ` ``; the inline pattern now needs a
+lone opening backtick and a non-blank expression. The docs site found this
+(PARI-GP-ENGINE's pattern has the same gap).
+
+**`2^10 + 1/2` needs the prelude.** `er2.preparse` emits calls to
+`__er2_int__`, which only `er2.prelude` defines; `install.sh --check`
+evaluates with `prelude.namespace()` for that reason.
+
+## Left for later
+
+- HTML display (`_repr_html_`), for pandas tables and the like.
+- A Windows runner in CI.
+- Pinning CI to a released ER2 once ER2 is on PyPI, instead of its `main`.
 
 ## Not planned
 

@@ -1,0 +1,60 @@
+---
+title: "01 · The syntax"
+engine: er2
+format: html
+---
+
+ER2 is Python with five differences, and this page is all of them. Every
+cell below is ER2, run by the engine; nothing else in the language differs
+from Python.
+
+## `^` is a power, `^^` is XOR
+
+```{er2}
+print(2^10, 5 ^^ 3)
+```
+
+## Integer literals are exact
+
+`/` of two integers is a rational, not a float, and powers stay exact.
+
+```{er2}
+a = 1/3
+print(a, a + 2/3, type(a).__name__)
+print(2^-3, (2/3)^2)
+```
+
+## `5r` is a raw Python integer
+
+For Python's own behaviour. Mixed with an ER2 number, the result is ER2's.
+
+```{er2}
+print(type(7r).__name__, 7r / 2r, 7r / 2)
+```
+
+## `sym` declares symbols
+
+`_x`, `_y`, … are predefined. A cell that ends in an expression shows it
+as mathematics:
+
+```{er2}
+sym t, u
+expand((t + u)^2)
+```
+
+```{er2}
+_x^2 + 1
+```
+
+## Strings, comments and f-strings are never translated
+
+```{er2}
+print("2^10 stays text", f"{2^10=}")   # and so does this ^
+```
+
+## Everything else is plain Python
+
+```{er2}
+squares = {k: k^2 for k in range(1, 6)}
+squares, sum(squares.values())
+```

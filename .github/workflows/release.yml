@@ -1,0 +1,124 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Work out the version
+        id: version
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$tag"            >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}"    >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Install ER2
+        run: uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.9.38
+
+      # A tag that disagrees with VERSION or _extension.yml would ship an
+      # extension that reports the wrong version to `quarto add`.
+      - name: Check the tag agrees with VERSION and _extension.yml
+        run: make release-check V=${{ steps.version.outputs.version }}
+
+      - name: Rebuild the engine and fail if the committed copy is stale
+        run: |
+          make build
+          git diff --exit-code -- _extensions/er2/er2.js
+
+      - name: Run the tests
+        run: make test
+
+      - name: Render the examples
+        run: make examples
+
+      - name: Build the release archives
+        run: make package V=${{ steps.version.outputs.version }}
+
+      # Written to a file rather than a step output: the changelog contains
+      # backticks, which a shell would treat as command substitution if the
+      # text were interpolated into the `gh release create` command line.
+      - name: Extract this version's changelog section
+        run: |
+          v='${{ steps.version.outputs.version }}'
+          tag='${{ steps.version.outputs.tag }}'
+          awk -v v="$v" '
+            $0 ~ "^## \\[" v "\\]" { inside = 1; next }
+            inside && /^## \[/       { exit }
+            inside && /^\[[^]]+\]: / { exit }
+            inside                    { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "CHANGELOG.md has no section for $v" >&2
+            exit 1
+          fi
+          {
+            echo
+            echo '## Install'
+            echo
+            echo '```bash'
+            echo "quarto add oeistools/ER2-ENGINE@$tag"
+            echo '```'
+            echo
+            echo 'Or download an archive below and unpack it into `_extensions/`.'
+          } >> release-notes.md
+          cat release-notes.md
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "ER2-ENGINE ${{ steps.version.outputs.tag }}" \
+            --notes-file release-notes.md \
+            --verify-tag \
+            dist/*.tar.gz dist/*.zip
+
+  # The release is created with GITHUB_TOKEN, and GitHub does not start new
+  # workflow runs from GITHUB_TOKEN events — so the `release: published`
+  # trigger in clean-install.yml never fires for our own releases. Installing
+  # the freshly published tag here is what actually proves it is installable.
+  verify-install:
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Install ER2
+        run: uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.9.38
+
+      - name: Install the published release and render with it
+        run: ./tests/clean-install.sh "${{ github.event.inputs.tag || github.ref_name }}"

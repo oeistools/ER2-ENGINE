@@ -112,7 +112,9 @@ run_case inline \
   present 'applies: 1/2'              'an inline expression is ER2 (exact division)' \
   present 'math inline">\(\left(x + 1\right)^{2}\)' 'inline latex() is inline maths' \
   present '`{er2} p`'                 'inline code inside a fenced block is left alone' \
-  present 'still works: 1024'         'substitution resumes after a fenced block'
+  present 'still works: 1024'         'substitution resumes after a fenced block' \
+  present '<code>```{er2}</code>'     'a code span showing a cell fence is not evaluated' \
+  present '<code>`{er2}`</code>'      'a bare {er2} with no expression is not evaluated'
 
 run_case display \
   present 'math display">\[x^{3} + 3 x^{2} + 3 x + 1\]' 'a SymPy value is display maths' \

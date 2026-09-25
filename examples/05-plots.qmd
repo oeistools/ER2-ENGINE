@@ -1,0 +1,59 @@
+---
+title: "05 · Plots"
+engine: er2
+format: html
+---
+
+Figures come from Matplotlib, imported as in any Python program. Every
+figure still open at the end of a cell is saved — SVG for HTML, PDF for
+LaTeX, PNG otherwise — and shown. Matplotlib must be installed in the
+environment ER2 runs in.
+
+## A labelled figure
+
+A `fig-` label and a caption make a numbered figure that can be
+cross-referenced:
+
+```{er2}
+#| label: fig-primepi
+#| fig-cap: "The prime-counting function $\\pi(x)$ against $x / \\log x$."
+#| fig-alt: "A staircase rising above a smooth curve."
+import math
+import matplotlib.pyplot as plt
+
+xs = list(range(2, 1001))
+plt.figure(figsize=(6, 3.5))
+plt.step(xs, [primepi(n) for n in xs], where="post", label="primepi(x)")
+plt.plot(xs, [n / math.log(n) for n in xs], label="x / log x")
+plt.legend()
+```
+
+@fig-primepi shows that $x/\log x$ undercounts the primes: at $x = 1000$
+it gives about 145, while $\pi(1000) =$ `{er2} primepi(1000)`.
+
+## ER2 values in a plot
+
+ER2 numbers are Python numbers, so they go straight into Matplotlib; and
+`latex()` returns a string, so it can be a label.
+
+```{er2}
+#| label: fig-phi
+#| fig-cap: "Euler's totient."
+ns = range(1, 201)
+plt.figure(figsize=(6, 3.5))
+plt.scatter(ns, [phi(n) for n in ns], s=4)
+plt.title(r"$\varphi(n)$")
+plt.xlabel("$n$");
+```
+
+## Several figures in one cell
+
+Each open figure is saved in turn; only the first can take the label.
+
+```{er2}
+#| echo: false
+for k in (2, 3):
+    plt.figure(figsize=(3, 2))
+    plt.plot([n^k for n in range(10)])
+    plt.title(f"$n^{k}$")
+```

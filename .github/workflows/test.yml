@@ -1,0 +1,71 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v10.2.0
+
+      # ER2 is not on PyPI yet, so it comes from its repository's main branch.
+      # Matplotlib goes into the same environment, because the figure tests
+      # need it and ER2 does not depend on it.
+      - name: Install ER2
+        run: uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.9.38
+
+      - name: Report versions
+        run: |
+          quarto --version
+          er2 --version
+
+      - name: Check prerequisites
+        run: ./install.sh --check
+
+      - name: Lint the runner
+        uses: astral-sh/ruff-action@v4.1.0
+        with:
+          src: _extensions/er2/er2_runner.py
+
+      - name: Check the runner's formatting
+        uses: astral-sh/ruff-action@v4.1.0
+        with:
+          src: _extensions/er2/er2_runner.py
+          args: "format --check"
+
+      - name: Build the engine from source
+        run: make build
+
+      - name: Fail if the committed engine is out of date
+        run: git diff --exit-code -- _extensions/er2/er2.js
+
+      - name: Run the tests
+        run: make test
+
+      - name: Render the examples
+        run: make examples
+
+      - name: Render the documentation site
+        run: make docs
+
+      # The suite above runs inside the repository, where `_extensions` and
+      # `_quarto.yml` are already in place. This installs the working tree the
+      # way `quarto add` installs a release, so a file missing from the
+      # extension directory fails here rather than after the tag is pushed.
+      - name: Install this tree as an extension and render with it
+        run: ./tests/clean-install.sh --local

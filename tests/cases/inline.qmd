@@ -25,3 +25,6 @@ The prime is `{er2} p`.
 ```
 
 After the block, substitution still works: `{er2} 2^10`.
+
+A code span that shows a fence, ` ```{er2} `, is not an expression, and
+neither is ``` `{er2}` ``` on its own.

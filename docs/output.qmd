@@ -1,0 +1,76 @@
+---
+title: "Output and figures"
+---
+
+## What a cell shows
+
+A cell shows, in order, what it printed and what it displayed, and then —
+if its last statement is an expression — the value of that expression, as
+a notebook does. A trailing `;` suppresses the value.
+
+```{er2}
+sym x
+print("printed first")
+factor(x^4 - 1)
+```
+
+```{er2}
+expand((x + 1)^5);
+```
+
+## Mathematics
+
+A value with a LaTeX form is shown as display maths. That covers every ER2
+type and every SymPy expression; other values are shown as text.
+
+```{er2}
+Matrix([[1, x], [x, 1]]).det()
+```
+
+```{er2}
+GF(9).gen()^4, NumberField(x^2 + 5).class_number()
+```
+
+`show()` displays each of its arguments as maths, wherever it is called:
+
+```{er2}
+for k in range(1, 4):
+    show(diff(sin(x)^k, x))
+```
+
+## Inline code
+
+An inline expression in prose is evaluated where it appears. It is shown
+as text, or as inline maths when it is `latex(…)`:
+
+````markdown
+The derivative of $\sin^3 x$ is `{er2} latex(diff(sin(x)^3, x))`.
+````
+
+The derivative of $\sin^3 x$ is `{er2} latex(diff(sin(x)^3, x))`.
+
+## Figures
+
+Every Matplotlib figure left open at the end of a cell is saved and shown,
+then closed: SVG for HTML, PDF for LaTeX and PDF output, PNG for everything
+else (`fig-format` overrides it). Matplotlib's own return values, such as
+the list of lines `plt.plot` returns, are not shown.
+
+```{er2}
+#| label: fig-sigma
+#| fig-cap: "The sum of divisors, $\\sigma(n)$, with $n$ for comparison."
+import matplotlib.pyplot as plt
+ns = range(1, 101)
+plt.figure(figsize=(6, 3))
+plt.bar(ns, [sigma(n) for n in ns])
+plt.plot(ns, ns, color="black")
+```
+
+@fig-sigma is numbered and cross-referenced like any Quarto figure.
+
+## Caching
+
+`freeze: auto` or `freeze: true` store results in `_freeze/`, and the
+paths stored there are relative, so the cache can be committed and
+replayed elsewhere. Quarto honours `freeze` only when a whole project is
+rendered; `quarto render one-file.qmd` always executes.

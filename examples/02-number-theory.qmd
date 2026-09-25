@@ -1,0 +1,64 @@
+---
+title: "02 · Number theory"
+engine: er2
+format: html
+---
+
+Integers go to PARI. One `factor` works for integers, rationals and
+polynomials, and the arithmetic functions have their textbook names.
+
+## Factorisation
+
+```{er2}
+f = factor(2^64 + 1)
+print(f)
+print(list(f), f.value() == 2^64 + 1)
+```
+
+Negative numbers and rationals factor too:
+
+```{er2}
+print(factor(-360), factor(3/20))
+```
+
+A factorisation is a mathematical object, so it displays as one:
+
+```{er2}
+factor(720)
+```
+
+A partial factorisation stops trial division at a limit, and says what it
+could not split:
+
+```{er2}
+g = factor(10^60 + 1, limit=10^5)
+print(g)
+print(g.is_complete, g.unfactored)
+```
+
+## Arithmetic functions
+
+```{er2}
+n = 360
+print(divisors(n)[:6], numdiv(n), sigma(n), phi(n), radical(n))
+```
+
+## Primes
+
+$2^{127} - 1$ is prime, and so is $2^{521} - 1$, the first Mersenne prime
+found by computer:
+
+```{er2}
+isprime(2^127 - 1), isprime(2^521 - 1)
+```
+
+The primes below 50, in ordinary Python:
+
+```{er2}
+[k for k in range(50) if isprime(k)]
+```
+
+## In prose
+
+$\varphi(123456789) =$ `{er2} phi(123456789)`, and
+$360 =$ `{er2} latex(factor(360))`.

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="46 18 256 256" width="256" height="256" role="img" aria-label="ER2-ENGINE: a Quarto engine for ER2">
+  <path d="M 184.7 236 H 90 Q 70 236 70 216 V 56 Q 70 36 90 36
+           H 194 M 262 106 V 158.7"
+        fill="none" stroke="#100D0B" stroke-width="14"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 208 36 L 262 90 H 220 Q 208 90 208 78 Z" fill="#D9774F"/>
+  <text x="94" y="98" font-family="IBM Plex Mono, DejaVu Sans Mono, monospace" font-weight="700"
+        font-size="32" fill="#100D0B">sym x</text>
+  <text x="94" y="146" font-family="IBM Plex Mono, DejaVu Sans Mono, monospace" font-weight="700"
+        font-size="32" fill="#100D0B">(x+1)<tspan
+        fill="#9E2F10">^</tspan>2</text>
+  <circle cx="232" cy="206" r="38" fill="none" stroke="#9E2F10"
+          stroke-width="16"/>
+  <path d="M 246 228 L 274 260" stroke="#9E2F10"
+        stroke-width="16" stroke-linecap="round"/>
+</svg>

@@ -1,6 +1,6 @@
-# The only Python in this repository is the runner the engine starts,
-# _extensions/er2/er2_runner.py. This file exists to configure ruff for it;
-# nothing here is a package.
+# The Python in this repository is the runner the engine starts,
+# _extensions/er2/er2_runner.py, and tools/make_logo.py. This file exists to
+# configure ruff for them; nothing here is a package.
 
 [tool.ruff]
 # The runner must work on every Python ER2 supports.

@@ -9,7 +9,10 @@ website:
   repo-url: "https://github.com/oeistools/ER2-ENGINE"
   repo-actions: [source, issue]
   page-navigation: true
+  favicon: assets/logo-mark.png
   navbar:
+    logo: assets/logo-mark.png
+    logo-alt: "ER2-ENGINE"
     left:
       - href: index.qmd
         text: Home

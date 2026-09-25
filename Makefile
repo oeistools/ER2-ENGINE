@@ -23,7 +23,7 @@ VERSION := $(shell cat VERSION)
 
 .DEFAULT_GOAL := help
 .PHONY: help build test examples check doctor clean distclean version bump-version \
-        clean-install package release-check tag lint fmt docs docs-preview
+        clean-install package release-check tag lint fmt docs docs-preview logo
 
 help: ## Show this help
 	@echo "ER2-ENGINE $(VERSION)"
@@ -51,13 +51,16 @@ docs: build ## Render the documentation site into docs/_site
 docs-preview: build ## Serve the documentation site with live reload
 	$(QUARTO) preview docs
 
-lint: ## Lint the runner with ruff
-	$(RUFF) check $(RUNNER)
-	$(RUFF) format --check $(RUNNER)
+logo: ## Regenerate assets/ (logo, dark logo, mark) from tools/make_logo.py
+	uvx --with cairosvg python tools/make_logo.py
+
+lint: ## Lint the runner and the tools with ruff
+	$(RUFF) check $(RUNNER) tools/
+	$(RUFF) format --check $(RUNNER) tools/
 
 fmt: ## Reformat the runner with ruff
-	$(RUFF) format $(RUNNER)
-	$(RUFF) check --fix $(RUNNER)
+	$(RUFF) format $(RUNNER) tools/
+	$(RUFF) check --fix $(RUNNER) tools/
 
 doctor: ## Report whether Quarto and ER2 are usable
 	@./install.sh --check

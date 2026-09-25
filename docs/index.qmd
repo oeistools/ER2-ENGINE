@@ -3,6 +3,8 @@ title: "ER2-ENGINE"
 subtitle: "Run ER2 inside Quarto documents"
 ---
 
+![](assets/logo.png){fig-alt="ER2-ENGINE: a Quarto engine for ER2" width="220" fig-align="center"}
+
 [ER2](https://github.com/oeistools/ER2) is Python with mathematics built
 in: `x^2` is a power, `1/3` is exact, `sym x` declares a symbol, and number
 theory runs on PARI/GP. This extension makes it a Quarto language:

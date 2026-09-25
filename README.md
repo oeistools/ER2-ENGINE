@@ -1,5 +1,12 @@
 # ER2-ENGINE
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
+    <img src="assets/logo.png" alt="ER2-ENGINE: a Quarto engine for ER2" width="220">
+  </picture>
+</p>
+
 [![CI](https://github.com/oeistools/ER2-ENGINE/actions/workflows/test.yml/badge.svg)](https://github.com/oeistools/ER2-ENGINE/actions/workflows/test.yml)
 [![Release](https://github.com/oeistools/ER2-ENGINE/actions/workflows/release.yml/badge.svg)](https://github.com/oeistools/ER2-ENGINE/releases/latest)
 [![Version](https://img.shields.io/github/v/release/oeistools/ER2-ENGINE?label=version)](https://github.com/oeistools/ER2-ENGINE/releases/latest)

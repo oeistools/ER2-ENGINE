@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A logo, in the style of PARI-GP-ENGINE's and in ER2's colours, with a
+  dark-mode variant for the README and an icon for the site's navbar and
+  favicon. `tools/make_logo.py` (`make logo`) generates all of them.
+
 ## [0.1.0] — 2026-09-25
 
 The first release: ER2 as a Quarto language, with ` ```{er2} ` cells that

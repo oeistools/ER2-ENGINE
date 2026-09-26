@@ -69,7 +69,8 @@ installed in. So there is no kernel to install and no daemon to restart.
 ## Requirements
 
 - **Quarto ≥ 1.9** — engine extensions do not exist in earlier versions.
-- **ER2**, for instance `uv tool install git+https://github.com/oeistools/ER2`.
+- **ER2**, from [PyPI](https://pypi.org/project/er2/): `uv tool install er2`
+  (or `pipx install er2`, or `pip install er2`).
   The engine uses the Python behind the `er2` command, so whatever
   environment ER2 is installed in is the one documents run in.
 - **Matplotlib**, only for figures, in that same environment.

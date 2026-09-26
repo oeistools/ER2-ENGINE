@@ -6,16 +6,17 @@ title: "Get started"
 
 - **Quarto ≥ 1.9**, because engine extensions do not exist in earlier
   versions.
-- **ER2**, with its `er2` command on your `PATH`:
+- **ER2**, from [PyPI](https://pypi.org/project/er2/), with its `er2`
+  command on your `PATH`:
 
   ```bash
-  uv tool install git+https://github.com/oeistools/ER2
+  uv tool install er2
   ```
 
   For figures, install Matplotlib in the same environment:
 
   ```bash
-  uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+  uv tool install --with matplotlib er2
   ```
 
 **Windows**: ER2 cannot be installed natively yet, because its PARI

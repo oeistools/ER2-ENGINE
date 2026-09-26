@@ -12,6 +12,12 @@ All notable changes to this project are documented here. The format follows
   dark-mode variant for the README and an icon for the site's navbar and
   favicon. `tools/make_logo.py` (`make logo`) generates all of them.
 
+### Changed
+
+- ER2 is on PyPI: the documentation and `install.sh` say
+  `uv tool install er2`, and CI installs a pinned release (`er2==0.7.0`)
+  instead of ER2's `main` branch; the clean-install job takes the latest.
+
 ## [0.1.0] — 2026-09-25
 
 The first release: ER2 as a Quarto language, with ` ```{er2} ` cells that

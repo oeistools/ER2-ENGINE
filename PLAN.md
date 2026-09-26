@@ -210,7 +210,9 @@ evaluates with `prelude.namespace()` for that reason.
   its Windows code — `er2.exe` launcher discovery, `python` instead of
   `python3` — untested, for the day `cypari2` ships Windows wheels. Until
   then Windows users run Quarto and ER2 inside WSL.
-- Pinning CI to a released ER2 once ER2 is on PyPI, instead of its `main`.
+- ~~Pinning CI to a released ER2 once ER2 is on PyPI, instead of its
+  `main`~~ — done: `er2==0.7.0` from PyPI in the test, release and pages
+  workflows; clean-install takes the latest, as a user would.
 
 ## Not planned
 

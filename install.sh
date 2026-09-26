@@ -74,7 +74,7 @@ check_er2() {
   local v; v="$("$py" -c 'import er2; print(er2.__version__)' 2>/dev/null)"
   if [ -z "$v" ]; then
     bad "$py cannot import er2 — install ER2 (https://github.com/oeistools/ER2):"
-    echo "        uv tool install git+https://github.com/oeistools/ER2"
+    echo "        uv tool install er2"
     echo
     echo "        If ER2 is installed in another environment, put this in your document:"
     echo "            er2:"

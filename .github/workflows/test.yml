@@ -19,11 +19,12 @@ jobs:
 
       - uses: astral-sh/setup-uv@v10.2.0
 
-      # ER2 is not on PyPI yet, so it comes from its repository's main branch.
-      # Matplotlib goes into the same environment, because the figure tests
-      # need it and ER2 does not depend on it.
+      # A released ER2 from PyPI, pinned so that a new ER2 release cannot
+      # change the results without a commit here; clean-install.yml takes the
+      # latest. Matplotlib goes into the same environment, because the figure
+      # tests need it and ER2 does not depend on it.
       - name: Install ER2
-        run: uv tool install --with matplotlib git+https://github.com/oeistools/ER2
+        run: uv tool install --with matplotlib er2==0.7.0
 
       - uses: quarto-dev/quarto-actions/setup@v2
         with:
